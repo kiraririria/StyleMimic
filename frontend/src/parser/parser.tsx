@@ -53,7 +53,7 @@ export const parseChatHtmlToJson = (htmlString: string): ParsedMessage[] => {
             }
         }
 
-        if ((sender !== 'Неизвестный отправитель' || textContent !== 'Нет текста') && !textContent.includes("Not included")) {
+        if ((sender !== 'Неизвестный отправитель' || textContent !== 'Нет текста') && !textContent.includes("Not included")&& !textContent.includes("<!DOCTYPE")) {
             messages.push({
                 sender,
                 text: textContent,

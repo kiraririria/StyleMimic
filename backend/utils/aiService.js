@@ -1,14 +1,14 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /**
- * Отправляет сообщение на OpenRouter API.
+ * Отправляет сообщения на OpenRouter API.
  * @param {Array<Object>} messages - Массив объектов сообщений (роль, контент).
- * @param {string} modelName - Имя модели для использования (например, "deepseek/deepseek-prover-v2:free").
+ * @param {string} modelName - Имя модели.
+ * @param {Object} [options={}] - Дополнительные параметры для API (temperature, max_tokens и т.д.).
  * @returns {Promise<string>} - Текстовый ответ от AI.
  */
-async function sendMessageToOpenRouter(messages, modelName) {
+async function callOpenRouter(messages, modelName, options = {}) {
     const apiKey = process.env.OPENROUTER_API_KEY;
     const siteUrl = process.env.YOUR_SITE_URL;
     const siteName = process.env.YOUR_SITE_NAME;
@@ -22,17 +22,13 @@ async function sendMessageToOpenRouter(messages, modelName) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
     };
-    if (siteUrl) {
-        headers['HTTP-Referer'] = siteUrl;
-    }
-    if (siteName) {
-        headers['X-Title'] = siteName;
-    }
+    if (siteUrl) headers['HTTP-Referer'] = siteUrl;
+    if (siteName) headers['X-Title'] = siteName;
 
     const payload = {
         model: modelName,
         messages: messages,
-        stream: false
+        ...options, // Добавляем температуру, max_tokens и т.д.
     };
 
     try {
@@ -44,17 +40,12 @@ async function sendMessageToOpenRouter(messages, modelName) {
 
         if (!response.ok) {
             let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: await response.text() };
-            }
+            try { errorData = await response.json(); }
+            catch (e) { errorData = { message: await response.text() }; }
             console.error(`OpenRouter API Error (model: ${modelName}):`, errorData);
             throw new Error(`OpenRouter API request failed for model ${modelName} with status ${response.status}: ${errorData.message || 'Unknown error'}`);
         }
-
         const data = await response.json();
-
         if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
             return data.choices[0].message.content;
         } else {
@@ -67,4 +58,4 @@ async function sendMessageToOpenRouter(messages, modelName) {
     }
 }
 
-module.exports = { sendMessageToOpenRouter };
+module.exports = { callOpenRouter };
