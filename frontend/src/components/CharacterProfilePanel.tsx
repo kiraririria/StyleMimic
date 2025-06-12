@@ -9,8 +9,8 @@ interface CharacterProfilePanelProps {
 const CharacterProfilePanel: React.FC<CharacterProfilePanelProps> = ({ profile, isLoading }) => {
     if (isLoading) {
         return (
-            <div style={panelStyle}>
-                <h4>Профиль Персонажа</h4>
+            <div className="card">
+                <h4 className="card-header">Профиль Персонажа</h4>
                 <p>Загрузка профиля...</p>
             </div>
         );
@@ -18,15 +18,15 @@ const CharacterProfilePanel: React.FC<CharacterProfilePanelProps> = ({ profile, 
 
     if (!profile || !profile.name) {
         return (
-            <div style={panelStyle}>
-                <h4>Профиль Персонажа</h4>
+            <div className="card">
+                <h4 className="card-header">Профиль Персонажа</h4>
                 <p>Профиль не загружен или не определен. Загрузите HTML-файл с чатом, чтобы создать профиль.</p>
             </div>
         );
     }
 
     return (
-        <div style={panelStyle}>
+        <div className="card">
             <h4>Профиль Персонажа: {profile.name}</h4>
             <div>
                 <strong>Описание стиля (используется AI):</strong>
@@ -47,16 +47,6 @@ const CharacterProfilePanel: React.FC<CharacterProfilePanelProps> = ({ profile, 
             )}
         </div>
     );
-};
-
-const panelStyle: React.CSSProperties = {
-    marginTop: '20px',
-    padding: '15px',
-    border: '1px solid #555',
-    borderRadius: '8px',
-    backgroundColor: '#333842',
-    maxHeight: '400px',
-    overflowY: 'auto',
 };
 
 const textBlockStyle: React.CSSProperties = {

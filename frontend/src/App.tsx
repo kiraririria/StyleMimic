@@ -17,7 +17,12 @@ const API_BASE_URL = 'http://localhost:5001';
 interface ParsedMessage extends ImportedParsedMessage {}
 
 function App() {
-  const [userName, setUserName] = useState<string>('');
+  let tempName = localStorage.getItem('userName');
+  if (tempName===null)
+  {
+    tempName = "";
+  }
+  const [userName, setUserName] = useState<string>(tempName);
   const [characterName, setCharacterName] = useState<string | null>(null);
   const [characterProfile, setCharacterProfile] = useState<CharacterProfile | null>(null);
   const [aiSettings, setAiSettings] = useState<AISettings>(DEFAULT_AI_SETTINGS);
@@ -127,6 +132,7 @@ function App() {
           characterName: charName,
           messages: messages.slice(-aiSettings.messagesForAnalysis),
           model: aiSettings.analysisModel,
+          analysisMessages: aiSettings.messagesForAnalysis
         }),
       });
       if (!response.ok) {
@@ -213,7 +219,7 @@ function App() {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <p>Персонализированный Чат-бот</p>
+          <h1>Персонализированный Чат-бот</h1>
         </header>
 
         <main style={{ padding: '20px', maxWidth: '1300px', margin: '0 auto', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
@@ -247,9 +253,9 @@ function App() {
           </div>
 
           {}
-          <div style={{ flex: 2, border: '1px solid #444', borderRadius: '8px', padding: '15px', backgroundColor: '#282c34', display: 'flex', flexDirection: 'column', minHeight: '600px' /* Для лучшего вида */ }}>
+          <div className="card" style={{ flex: 2, border: '1px solid #444', borderRadius: '8px', padding: '15px', display: 'flex', flexDirection: 'column', minHeight: '600px' /* Для лучшего вида */ }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3>Чат с {characterName ? characterName : (userName ? "AI" : "...")}</h3>
+              <h3 className="card-header">Чат с {characterName ? characterName : (userName ? "AI" : "...")}</h3>
               <div>
                 <button onClick={handleDownloadChat} disabled={chatMessages.length === 0 || globalDisabled} style={{ padding: '8px 12px', marginRight: '10px' }}>
                   Скачать чат

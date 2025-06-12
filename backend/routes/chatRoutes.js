@@ -8,7 +8,7 @@ const {
 } = require('../utils/promptUtils');
 
 router.post('/create-profile', async (req, res) => {
-    const { characterName, messages, model } = req.body;
+    const { characterName, messages, model, analysisMessages } = req.body;
 
     if (!characterName || !messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: 'characterName and messages array are required.' });
@@ -18,10 +18,10 @@ router.post('/create-profile', async (req, res) => {
     }
 
     try {
-        const analysisPromptMessages = getProfileAnalysisPrompt(characterName, messages);
+        const analysisPromptMessages = getProfileAnalysisPrompt(characterName, messages,analysisMessages);
         const styleSummary = await callOpenRouter(analysisPromptMessages, model, { temperature: 0.3, max_tokens: 250 });
 
-        const exampleMessages = selectExampleMessages(messages);
+        const exampleMessages = selectExampleMessages(messages,analysisMessages);
 
         const profile = {
             name: characterName,

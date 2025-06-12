@@ -22,8 +22,8 @@ const UserProfileInput: React.FC<UserProfileInputProps> = ({ currentUserName, on
     }
 
     return (
-        <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #555', borderRadius: '5px', backgroundColor: '#333842' }}>
-            <h4>Ваше имя в чате:</h4>
+        <div className="card">
+            <h4 className="card-header">Ваше имя в чате</h4>
             {isEditing || !currentUserName ? (
                 <>
                     <input

@@ -1,5 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { ChatMessage } from '../types';
+import React, { useRef, useEffect } from 'react';
+import './ChatWindow.css'; // Создадим отдельный CSS файл для этого компонента
+
+interface ChatMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+}
 
 interface ChatWindowProps {
     messages: ChatMessage[];
@@ -9,7 +14,13 @@ interface ChatWindowProps {
     characterName: string | null;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoadingAi, aiError, userName, characterName }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+                                                   messages,
+                                                   isLoadingAi,
+                                                   aiError,
+                                                   userName,
+                                                   characterName
+                                               }) => {
     const chatEndRef = useRef<null | HTMLDivElement>(null);
 
     useEffect(() => {
@@ -23,16 +34,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoadingAi, aiError,
     };
 
     return (
-        <div className="chat-window" style={{ height: '400px', overflowY: 'auto', border: '1px solid #555', padding: '10px', marginBottom: '10px', backgroundColor: '#3a3f4b', borderRadius: '4px' }}>
-            {messages.map((msg, index) => (
-                <div key={index} className={`message ${msg.role}`}>
-                    <span className="message-sender">{getDisplayName(msg.role)}: </span>
-                    <span className="message-content">{msg.content}</span>
-                </div>
-            ))}
-            {isLoadingAi && <div className="message system"><em>{(characterName || 'AI')} думает...</em></div>}
-            {aiError && <div className="message system error" style={{color: 'red'}}>Ошибка AI: {aiError}</div>}
-            <div ref={chatEndRef} />
+        <div className="chat-container">
+            <div className="chat-window">
+                {messages.map((msg, index) => (
+                    <div key={index} className={`message ${msg.role}`}>
+                        <span className="message-sender">{getDisplayName(msg.role)}: </span>
+                        <span className="message-content">{msg.content}</span>
+                    </div>
+                ))}
+                {isLoadingAi && (
+                    <div className="typing-indicator">
+                        <div className="typing-dot"></div>
+                        <div className="typing-dot"></div>
+                        <div className="typing-dot"></div>
+                        <span>{(characterName || 'AI')} думает...</span>
+                    </div>
+                )}
+                {aiError && (
+                    <div className="message system error">
+                        <span className="message-sender">Ошибка: </span>
+                        <span className="message-content">{aiError}</span>
+                    </div>
+                )}
+                <div ref={chatEndRef} />
+            </div>
         </div>
     );
 };
