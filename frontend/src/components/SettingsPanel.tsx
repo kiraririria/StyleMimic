@@ -4,7 +4,8 @@ export const AVAILABLE_MODELS = [
     "deepseek/deepseek-prover-v2:free",
     "mistralai/mistral-small-3.1-24b-instruct:free",
     "deepseek/deepseek-chat-v3-0324:free",
-    "nousresearch/deephermes-3-mistral-24b-preview:free"
+    "nousresearch/deephermes-3-mistral-24b-preview:free",
+    "deepseek/deepseek-r1-0528:free"
 ];
 
 export interface AISettings {
@@ -67,7 +68,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSettingsChang
                     disabled={disabled}
                 />
 
-                <label htmlFor="maxTokens">Макс. токенов (ответ):</label>
+                <label htmlFor="maxTokens">Макс. токенов:</label>
                 <input
                     type="number"
                     id="maxTokens"
@@ -79,27 +80,24 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSettingsChang
                 />
 
                 <label htmlFor="analysisModel">Модель для анализа:</label>
-                <select
+                <input
+                    type="text"
                     id="analysisModel"
-                    className="select-field"
+                    className="input-field input-number"
                     value={settings.analysisModel}
                     onChange={(e) => handleChange('analysisModel', e.target.value)}
                     disabled={disabled}
-                >
-                    {AVAILABLE_MODELS.map(model => <option key={model} value={model}>{model}</option>)}
-                </select>
+                />
 
                 <label htmlFor="chatModel">Модель для общения:</label>
-                <select
-                    className="select-field"
+                <input
+                    type="text"
                     id="chatModel"
+                    className="input-field input-number"
                     value={settings.chatModel}
                     onChange={(e) => handleChange('chatModel', e.target.value)}
                     disabled={disabled}
-                >
-                    {AVAILABLE_MODELS.map(model => <option key={model} value={model}>{model}</option>)}
-                </select>
-
+                />
                 <label htmlFor="APIKey">Ключ API:</label>
                 <input
                     type="text"

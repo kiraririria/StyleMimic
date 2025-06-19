@@ -161,11 +161,10 @@ input[type="text"] {
   flex: 1;
   padding: 16px 20px;
   border-radius: 16px;
-  border: none;
-  background: rgba(10, 10, 20, 0.6);
+  background: linear-gradient(135deg, rgba(20, 15, 40, 0.8), rgba(30, 25, 60, 0.8));
   color: white;
   font-size: 1rem;
-  border: 1px solid rgba(138, 79, 255, 0.3);
+  border: 1px solid var(--color-primary);
   transition: all 0.3s ease;
 }
 
@@ -258,7 +257,6 @@ button:disabled {
   }
 }
 
-/* Добавьте в конец App.css */
 .card {
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
@@ -295,7 +293,6 @@ button:disabled {
   border: none;
 }
 
-/* Добавьте в App.css */
 .input-field {
   display: block;
   width: 100%;
@@ -308,6 +305,7 @@ button:disabled {
   transition: all 0.3s ease;
   margin: 8px 0 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  min-width: 100%;
 }
 
 .input-field:focus {
@@ -326,7 +324,6 @@ button:disabled {
   font-size: 0.95rem;
 }
 
-/* Специфичные стили для number input */
 .input-number {
   width: 100px;
   padding: 12px 16px;
@@ -335,7 +332,6 @@ button:disabled {
   border: 1px solid var(--color-primary);
 }
 
-/* Стили для чекбоксов */
 .input-checkbox {
   position: relative;
   width: 24px;
@@ -362,14 +358,13 @@ button:disabled {
   transform: translate(-50%, -50%);
 }
 
-/* Обновляем стили для .select-field */
 .select-field {
   display: block;
-  width: 100%;
+  width: 45%;
   padding: 14px 20px;
-  padding-right: 45px; /* Место для стрелки */
+  padding-right: 45px;
   border-radius: 16px;
-  border: 1px solid rgba(138, 79, 255, 0.3);
+  border: 1px solid var(--color-primary);
   background: rgba(10, 10, 20, 0.7)
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238a4fff' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E")
   no-repeat right 15px center;
@@ -379,8 +374,13 @@ button:disabled {
   transition: all 0.3s ease;
   margin: 8px 0 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  appearance: none; /* Убираем стандартный вид */
+  appearance: none;
   cursor: pointer;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 45px;
 }
 
 .select-field:focus {
@@ -391,7 +391,6 @@ button:disabled {
           inset 0 0 10px rgba(138, 79, 255, 0.1);
 }
 
-/* Стили для опций */
 .select-field option {
   background-color: #1a1a2e;
   color: #f0f0f0;
@@ -409,7 +408,15 @@ button:disabled {
   font-weight: bold;
 }
 
-/* Убираем стандартные стрелки */
+.profile-field{
+background: linear-gradient(135deg, rgba(20, 15, 40, 0.8), rgba(30, 25, 60, 0.8));
+padding: 8px;
+border-radius: 4px;
+margin: 5px 0;
+font-size: 0.9em;
+white-space: pre-wrap;
+}
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -420,7 +427,6 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Кастомные стрелки */
 .number-controls {
   display: inline-flex;
   flex-direction: column;
@@ -453,7 +459,6 @@ input[type="number"] {
   background: var(--color-primary);
 }
 
-/* Обертка для поля с кнопками */
 .number-input-wrapper {
   display: flex;
   align-items: center;

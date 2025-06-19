@@ -1,49 +1,65 @@
 import React, { ChangeEvent } from 'react';
-import { ParsedMessage, parseChatHtmlToJson } from '../parser/parser';
-import './FileUpload.css'; // Создадим отдельный CSS файл
+import './FileUpload.css';
+import {parseHtmlFile, parseJsonFile} from "../parser/parser";
 
-interface HtmlUploaderProps {
+interface ParsedMessage {
+    sender: string;
+    text: string;
+}
+
+interface FileUploaderProps {
     onFileUpload: (fileName: string, messages: ParsedMessage[]) => void;
     onError: (errorMessage: string) => void;
     isLoading: boolean;
     currentFileName: string;
 }
 
-const HtmlUploader: React.FC<HtmlUploaderProps> = ({ onFileUpload, onError, isLoading, currentFileName }) => {
+const FileUploader: React.FC<FileUploaderProps> = ({ onFileUpload, onError, isLoading, currentFileName }) => {
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            const htmlString = e.target?.result as string;
-            if (htmlString) {
-                try {
-                    const jsonData = parseChatHtmlToJson(htmlString);
+            const content = e.target?.result as string;
+            if (!content) {
+                onError("Не удалось прочитать содержимое файла.");
+                return;
+            }
+
+            try {
+                if (file.name.endsWith('.json')) {
+                    const jsonData = parseJsonFile(content);
                     if (jsonData.length === 0) {
-                        onError("Сообщений не найдено в файле HTML. Возможно, структура HTML не соответствует ожидаемой, или файл пуст.");
+                        onError("Сообщений не найдено в файле JSON.");
                     } else {
                         onFileUpload(file.name, jsonData);
                     }
-                } catch (err) {
-                    console.error("Ошибка при парсинге HTML:", err);
-                    const errorMessage = err instanceof Error ? err.message : String(err);
-                    onError(`Ошибка при обработке файла "${file.name}": ${errorMessage}`);
+                } else {
+                    const jsonData = parseHtmlFile(content);
+                    if (jsonData.length === 0) {
+                        onError("Сообщений не найдено в файле HTML.");
+                    } else {
+                        onFileUpload(file.name, jsonData);
+                    }
                 }
-            } else {
-                onError("Не удалось прочитать содержимое файла.");
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                onError(`Ошибка при обработке файла "${file.name}": ${errorMessage}`);
+                console.error("Ошибка при парсинге:", err);
             }
         };
+
         reader.onerror = () => {
-            console.error("Ошибка чтения файла");
             onError(`Ошибка при чтении файла "${file.name}".`);
         };
+
         reader.readAsText(file);
     };
 
     return (
         <div className="card">
-            <h4 className="card-header">Загрузка и парсинг HTML файла чата</h4>
+            <h4 className="card-header">Загрузите файл чата (HTML/JSON)</h4>
 
             <div className="file-upload-wrapper">
                 <button
@@ -58,7 +74,7 @@ const HtmlUploader: React.FC<HtmlUploaderProps> = ({ onFileUpload, onError, isLo
                 </button>
                 <input
                     type="file"
-                    accept=".html,.htm"
+                    accept=".html,.htm,.json"
                     onChange={handleFileChange}
                     disabled={isLoading}
                     key={currentFileName || 'file-input'}
@@ -77,4 +93,4 @@ const HtmlUploader: React.FC<HtmlUploaderProps> = ({ onFileUpload, onError, isLo
     );
 };
 
-export default HtmlUploader;
+export default FileUploader;

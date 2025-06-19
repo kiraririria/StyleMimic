@@ -1,5 +1,6 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+//const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /**
  * Отправляет сообщения на OpenRouter API.
@@ -28,7 +29,7 @@ async function callOpenRouter(messages, modelName, options = {}) {
     const payload = {
         model: modelName,
         messages: messages,
-        ...options, // Добавляем температуру, max_tokens и т.д.
+        ...options,
     };
 
     try {
@@ -57,5 +58,13 @@ async function callOpenRouter(messages, modelName, options = {}) {
         throw new Error(`Failed to get response from AI service for model ${modelName}.`);
     }
 }
+
+async function callLocalModel(messages, url, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+}
+
 
 module.exports = { callOpenRouter };

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 import { ParsedMessage as ImportedParsedMessage, ChatMessage, CharacterProfile } from './types';
 
 
 import UserProfileInput from './components/UserProfileInput';
-import SettingsPanel, { AISettings, DEFAULT_AI_SETTINGS, AVAILABLE_MODELS } from './components/SettingsPanel';
-import HtmlUploader from './components/HtmlUploader';
+import SettingsPanel, { AISettings, DEFAULT_AI_SETTINGS} from './components/SettingsPanel';
+import HtmlUploader from './components/FileUploader';
 import CharacterProfilePanel from './components/CharacterProfilePanel';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
+import ChatComponent from "./components/ChatComponent";
 
 const API_BASE_URL = 'http://localhost:5001';
 
@@ -31,6 +31,7 @@ function App() {
   const [htmlFileName, setHtmlFileName] = useState<string>('');
   const [htmlParserError, setHtmlParserError] = useState<string | null>(null);
   const [isHtmlLoading, setIsHtmlLoading] = useState<boolean>(false);
+  const [isHtmlWaslLoading, setIsHtmlWasLoading] = useState<boolean>(false);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
@@ -44,8 +45,8 @@ function App() {
     if (savedSettings) {
       try {
         const parsedSettings = JSON.parse(savedSettings) as AISettings;
-        if (!AVAILABLE_MODELS.includes(parsedSettings.analysisModel)) parsedSettings.analysisModel = DEFAULT_AI_SETTINGS.analysisModel;
-        if (!AVAILABLE_MODELS.includes(parsedSettings.chatModel)) parsedSettings.chatModel = DEFAULT_AI_SETTINGS.chatModel;
+        if (parsedSettings.analysisModel.length==0) parsedSettings.analysisModel = DEFAULT_AI_SETTINGS.analysisModel;
+        if (parsedSettings.analysisModel.length==0) parsedSettings.chatModel = DEFAULT_AI_SETTINGS.chatModel;
         setAiSettings(parsedSettings);
       } catch (e) { setAiSettings(DEFAULT_AI_SETTINGS); }
     }
@@ -64,6 +65,7 @@ function App() {
 
   const handleHtmlUploaded = (fileName: string, messages: ParsedMessage[]) => {
     setIsHtmlLoading(true);
+    setIsHtmlWasLoading(true)
     setHtmlParserError(null);
     setHtmlFileName(fileName);
     setParsedHtmlMessages(messages);
@@ -119,7 +121,7 @@ function App() {
     if (identifiedCharName && charMsgsForProfile.length > 0) {
       createAndSetCharacterProfile(identifiedCharName, charMsgsForProfile);
     }
-  }, [parsedHtmlMessages, userName, htmlFileName]); // Зависимости
+  }, [parsedHtmlMessages, userName, htmlFileName]);
 
   const createAndSetCharacterProfile = async (charName: string, messages: string[]) => {
     if (!charName || messages.length === 0) return;
@@ -132,7 +134,11 @@ function App() {
           characterName: charName,
           messages: messages.slice(-aiSettings.messagesForAnalysis),
           model: aiSettings.analysisModel,
-          analysisMessages: aiSettings.messagesForAnalysis
+          analysisMessages: aiSettings.messagesForAnalysis,
+          aiOptionsFromClient: {
+            temperature: aiSettings.temperature,
+            maxTokens: aiSettings.maxTokens,
+          }
         }),
       });
       if (!response.ok) {
@@ -151,14 +157,19 @@ function App() {
 
   const handleSendChatMessage = async (userInputText: string) => {
     if (!userInputText.trim()) return;
+
     const newUserMessage: ChatMessage = { role: 'user', content: userInputText.trim() };
-    const currentChatHistory = [...chatMessages, newUserMessage];
-    setChatMessages(currentChatHistory);
-    setIsAiLoading(true); setAiError(null);
+    const updatedChatMessages = [...chatMessages, newUserMessage];
+    setChatMessages(updatedChatMessages);
+    setIsAiLoading(true);
+    setAiError(null);
 
     try {
+      const maxHistory = aiSettings.historyMessagesCount;
+      const messagesToSend = updatedChatMessages.slice(-maxHistory - 1);
+
       const payload: any = {
-        messages: currentChatHistory,
+        messages: messagesToSend,
         model: aiSettings.chatModel,
         aiOptionsFromClient: {
           temperature: aiSettings.temperature,
@@ -166,6 +177,7 @@ function App() {
           historyMessagesCount: aiSettings.historyMessagesCount,
         }
       };
+
       if (characterProfile) {
         payload.characterProfile = characterProfile;
       }
@@ -175,12 +187,18 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Запрос не удался: ${response.status}`);
       }
+
       const data = await response.json();
-      const aiReply: ChatMessage = { role: 'assistant', content: data.reply };
+      const aiReply: ChatMessage = {
+        role: 'assistant',
+        content: data.reply.replace("```text", "")
+      };
+
       setChatMessages(prev => [...prev, aiReply]);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Ошибка AI";
@@ -194,12 +212,13 @@ function App() {
     setChatMessages([]); setAiError(null);
     setCharacterName(null); setCharacterProfile(null);
     setParsedHtmlMessages(null); setHtmlFileName('');
+    setIsHtmlWasLoading(false)
   };
 
   const handleDownloadChat = () => {
     if (chatMessages.length === 0) { alert("Нет сообщений для скачивания."); return; }
     let chatText = `История чата с ${characterName || 'AI'}\nПользователь: ${userName || 'Вы'}\n`;
-    if (characterName) chatText += `Персонаж: ${characterName}\n`;
+    if (characterProfile) chatText += `Профиль: ${characterProfile.styleSummary}\n`;
     chatText += "--------------------------------------\n\n";
     chatMessages.forEach(msg => {
       const sender = msg.role === 'user' ? (userName || 'Вы') : (characterName || 'AI');
@@ -218,67 +237,50 @@ function App() {
   return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           <h1>Персонализированный Чат-бот</h1>
         </header>
 
-        <main style={{ padding: '20px', maxWidth: '1300px', margin: '0 auto', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-          {/* Левая колонка: Имя пользователя и Настройки */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <UserProfileInput
-                currentUserName={userName}
-                onUserNameSet={handleUserNameSet}
-                disabled={globalDisabled}
-            />
+        <main style={{ padding: '20px', maxWidth: '1300px', margin: '0 auto', display: 'flex', gap: '20px', alignItems: 'flex-center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px'}}>
             <SettingsPanel
                 settings={aiSettings}
                 onSettingsChange={handleAiSettingsChange}
                 disabled={globalDisabled}
             />
           </div>
-
-          {}
-          <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <UserProfileInput
+                currentUserName={userName}
+                onUserNameSet={handleUserNameSet}
+                disabled={globalDisabled}
+            />
             <HtmlUploader
                 onFileUpload={handleHtmlUploaded}
                 onError={handleHtmlUploadError}
                 isLoading={globalDisabled || !userName}
                 currentFileName={htmlFileName}
             />
+          </div>
+          {isHtmlWaslLoading &&         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {htmlParserError && <p style={{ color: 'red', marginTop: '10px' }}>{htmlParserError}</p>}
             <CharacterProfilePanel
                 profile={characterProfile}
                 isLoading={isAiLoading && !characterProfile}
             />
-          </div>
+          </div>}
 
-          {}
-          <div className="card" style={{ flex: 2, border: '1px solid #444', borderRadius: '8px', padding: '15px', display: 'flex', flexDirection: 'column', minHeight: '600px' /* Для лучшего вида */ }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3 className="card-header">Чат с {characterName ? characterName : (userName ? "AI" : "...")}</h3>
-              <div>
-                <button onClick={handleDownloadChat} disabled={chatMessages.length === 0 || globalDisabled} style={{ padding: '8px 12px', marginRight: '10px' }}>
-                  Скачать чат
-                </button>
-                <button onClick={handleNewChat} disabled={globalDisabled} style={{ padding: '8px 12px' }}>
-                  Новый чат / Сброс
-                </button>
-              </div>
-            </div>
-            <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
-              <ChatWindow
-                  messages={chatMessages}
-                  isLoadingAi={isAiLoading}
-                  aiError={aiError}
-                  userName={userName || "Вы"}
-                  characterName={characterName}
-              />
-            </div>
-            <ChatInput
-                onSendMessage={handleSendChatMessage}
-                isLoading={globalDisabled || !userName || (parsedHtmlMessages !== null && !characterName && !htmlParserError && !characterProfile) } // Более точная логика блокировки
-            />
-          </div>
+          <ChatComponent
+           characterName={characterName}
+           characterProfile={characterProfile} 
+           chatMessages={chatMessages} 
+           globalDisabled={globalDisabled}
+           handleDownloadChat={handleDownloadChat} 
+           handleNewChat={handleNewChat}
+           handleSendChatMessage={handleSendChatMessage}
+           htmlParserError={htmlParserError} 
+           isAiLoading={isAiLoading}
+           isHtmlWaslLoading={isHtmlWaslLoading}
+           parsedHtmlMessages={parsedHtmlMessages} userName={userName}/>
         </main>
       </div>
   );

@@ -8,7 +8,7 @@ const {
 } = require('../utils/promptUtils');
 
 router.post('/create-profile', async (req, res) => {
-    const { characterName, messages, model, analysisMessages } = req.body;
+    const { characterName, messages, model, analysisMessages, aiOptionsFromClient } = req.body;
 
     if (!characterName || !messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: 'characterName and messages array are required.' });
@@ -19,7 +19,7 @@ router.post('/create-profile', async (req, res) => {
 
     try {
         const analysisPromptMessages = getProfileAnalysisPrompt(characterName, messages,analysisMessages);
-        const styleSummary = await callOpenRouter(analysisPromptMessages, model, { temperature: 0.3, max_tokens: 250 });
+        const styleSummary = await callOpenRouter(analysisPromptMessages, model, { temperature: 0.5, max_tokens: (aiOptionsFromClient && typeof aiOptionsFromClient.maxTokens === 'number') ? aiOptionsFromClient.maxTokens : 500});
 
         const exampleMessages = selectExampleMessages(messages,analysisMessages);
 
@@ -45,7 +45,6 @@ router.post('/chat', async (req, res) => {
     if (!model) {
         return res.status(400).json({ error: 'Model name is required.' });
     }
-    // aiOptionsFromClient должен содержать { temperature, maxTokens, historyMessagesCount }
 
     try {
         let promptForAi;
@@ -70,7 +69,6 @@ router.post('/chat', async (req, res) => {
         res.json({ reply: aiResponse });
     } catch (error) {
         console.log(error)
-        // ... обработка ошибок ...
     }
 });
 

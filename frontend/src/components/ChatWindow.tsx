@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import './ChatWindow.css'; // Создадим отдельный CSS файл для этого компонента
+import './ChatWindow.css';
 
 interface ChatMessage {
     role: 'user' | 'assistant' | 'system';
@@ -47,7 +47,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         <div className="typing-dot"></div>
                         <div className="typing-dot"></div>
                         <div className="typing-dot"></div>
-                        <span>{(characterName || 'AI')} думает...</span>
+                        <span>{(characterName || 'AI')} печатает...</span>
                     </div>
                 )}
                 {aiError && (
