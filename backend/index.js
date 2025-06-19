@@ -6,7 +6,11 @@ const chatRoutes = require('./routes/chatRoutes');
 const app = express();
 const port = process.env.PORT || 5001;
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.YOUR_SITE_URL,
+    methods: ['POST', 'GET'],
+    credentials: true
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => {
