@@ -12,7 +12,7 @@ import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
 import ChatComponent from "./components/ChatComponent";
 
-const API_BASE_URL = 'http://localhost:5001';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 interface ParsedMessage extends ImportedParsedMessage {}
 
@@ -135,6 +135,7 @@ function App() {
           messages: messages.slice(-aiSettings.messagesForAnalysis),
           model: aiSettings.analysisModel,
           analysisMessages: aiSettings.messagesForAnalysis,
+          key: aiSettings.api_key,
           aiOptionsFromClient: {
             temperature: aiSettings.temperature,
             maxTokens: aiSettings.maxTokens,
@@ -171,6 +172,7 @@ function App() {
       const payload: any = {
         messages: messagesToSend,
         model: aiSettings.chatModel,
+        key: aiSettings.api_key,
         aiOptionsFromClient: {
           temperature: aiSettings.temperature,
           maxTokens: aiSettings.maxTokens,

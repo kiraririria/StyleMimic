@@ -6,11 +6,12 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
  * Отправляет сообщения на OpenRouter API.
  * @param {Array<Object>} messages - Массив объектов сообщений (роль, контент).
  * @param {string} modelName - Имя модели.
+ * @param key
  * @param {Object} [options={}] - Дополнительные параметры для API (temperature, max_tokens и т.д.).
  * @returns {Promise<string>} - Текстовый ответ от AI.
  */
-async function callOpenRouter(messages, modelName, options = {}) {
-    const apiKey = process.env.OPENROUTER_API_KEY;
+async function callOpenRouter(messages, modelName, key,options = {}) {
+    const apiKey = key;
     const siteUrl = process.env.YOUR_SITE_URL;
     const siteName = process.env.YOUR_SITE_NAME;
 

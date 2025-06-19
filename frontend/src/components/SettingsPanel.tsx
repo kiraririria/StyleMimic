@@ -1,10 +1,10 @@
 import React from 'react';
 
 export const AVAILABLE_MODELS = [
-    "deepseek/deepseek-prover-v2:free",
-    "mistralai/mistral-small-3.1-24b-instruct:free",
-    "deepseek/deepseek-chat-v3-0324:free",
     "nousresearch/deephermes-3-mistral-24b-preview:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+    "deepseek/deepseek-prover-v2:free",
+    "deepseek/deepseek-chat-v3-0324:free",
     "deepseek/deepseek-r1-0528:free"
 ];
 

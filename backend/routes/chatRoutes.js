@@ -8,7 +8,7 @@ const {
 } = require('../utils/promptUtils');
 
 router.post('/create-profile', async (req, res) => {
-    const { characterName, messages, model, analysisMessages, aiOptionsFromClient } = req.body;
+    const { characterName, messages, model, analysisMessages, key, aiOptionsFromClient } = req.body;
 
     if (!characterName || !messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: 'characterName and messages array are required.' });
@@ -19,7 +19,7 @@ router.post('/create-profile', async (req, res) => {
 
     try {
         const analysisPromptMessages = getProfileAnalysisPrompt(characterName, messages,analysisMessages);
-        const styleSummary = await callOpenRouter(analysisPromptMessages, model, { temperature: 0.5, max_tokens: (aiOptionsFromClient && typeof aiOptionsFromClient.maxTokens === 'number') ? aiOptionsFromClient.maxTokens : 500});
+        const styleSummary = await callOpenRouter(analysisPromptMessages, model, key,{ temperature: 0.5, max_tokens: (aiOptionsFromClient && typeof aiOptionsFromClient.maxTokens === 'number') ? aiOptionsFromClient.maxTokens : 500});
 
         const exampleMessages = selectExampleMessages(messages,analysisMessages);
 
@@ -37,7 +37,7 @@ router.post('/create-profile', async (req, res) => {
 });
 
 router.post('/chat', async (req, res) => {
-    const { messages, model, characterProfile, aiOptionsFromClient } = req.body;
+    const { messages, model,key, characterProfile, aiOptionsFromClient } = req.body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: 'Messages array is required.' });
@@ -65,7 +65,7 @@ router.post('/chat', async (req, res) => {
             max_tokens: (aiOptionsFromClient && typeof aiOptionsFromClient.maxTokens === 'number') ? aiOptionsFromClient.maxTokens : 500,
         };
 
-        const aiResponse = await callOpenRouter(promptForAi, model, apiCallOptions);
+        const aiResponse = await callOpenRouter(promptForAi, model,key, apiCallOptions);
         res.json({ reply: aiResponse });
     } catch (error) {
         console.log(error)
